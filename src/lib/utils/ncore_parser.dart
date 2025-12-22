@@ -1,11 +1,13 @@
 import 'dart:convert';
 
+import 'package:torri/models/hnr.dart';
+import 'package:torri/models/show_detail.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../models/torrent.dart';
 
 class NcoreParser {
-  static Future<void> prepareLoginScreen(WebViewController webView) {
+  static Future prepareLoginScreen(WebViewController webView) {
     return webView.runJavaScript('''
 document.querySelector("input[name=ne_leptessen_ki]").checked = true;
 var meta = document.createElement('meta');
@@ -66,21 +68,47 @@ TorrentList.postMessage(JSON.stringify({
     await webView.runJavaScript(javascript);
   }
 
-  static Future<List<String>> getHnRTorrentIds(
+  static Future<List<Hnr>> getHnRTorrents(
       WebViewController webView) async {
     var result = await webView.runJavaScriptReturningResult('''
 Array.from(document.getElementsByClassName("hnr_all"), node => {
   return {
-    id: node.querySelector(".hnr_tname a").href.match(/id=(\\d+)/)[1]
+    id: node.querySelector(".hnr_tname a").href.match(/id=(\\d+)/)[1],
+    left: node.querySelector(".hnr_ttimespent").innerText
   } 
 }).concat(Array.from(document.getElementsByClassName("hnr_all2"), node => {
   return {
-    id: node.querySelector(".hnr_tname a").href.match(/id=(\\d+)/)[1]
+    id: node.querySelector(".hnr_tname a").href.match(/id=(\\d+)/)[1],
+    left: node.querySelector(".hnr_ttimespent").innerText
   } 
-})).map(x => x.id);
+}));
 ''');
 
     Iterable<dynamic> torrentNames = jsonDecode(result as String);
-    return List<String>.from(torrentNames.map((item) => item.toString()));
+    return List<Hnr>.from(torrentNames.map((item) => Hnr.fromJson(item)));
+  }
+
+  static Future<ShowDetail> parseTorrentDefails(WebViewController webView) async {
+    var js = '''
+  var node = document.getElementsByClassName("inforbar_txt")[0];
+  var a = {
+    title: '',
+    year: 0,
+    description: ''
+  }
+
+  if (node) {
+    var data = node.innerText.split('\\n').map(x => x.split(':\\t'));
+    a = {
+      title: data[0][0],
+      year: Number(data.find(x => x[0] == "Megjelenés éve")[1]),
+      description: data.filter(x => x.length == 2 && x[0].indexOf('link') == -1 && x[0].indexOf('Megjelenés') == -1).map(x => x.join(': ')).join('\\n')
+    }
+  }
+  a
+    ''';
+    var result = await webView.runJavaScriptReturningResult(js);
+    var detail = ShowDetail.fromJson(jsonDecode(result as String));
+    return detail;
   }
 }

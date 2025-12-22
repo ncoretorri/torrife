@@ -1,9 +1,8 @@
 class SysInfo {
   final num freeSpace;
-  final String publicIp;
 
-  SysInfo(this.freeSpace, this.publicIp);
+  SysInfo(this.freeSpace);
 
   factory SysInfo.fromJson(Map<String, dynamic> json) =>
-      SysInfo(json["freeSpace"], json["publicIp"]);
+      SysInfo(json["freeSpace"]);
 }

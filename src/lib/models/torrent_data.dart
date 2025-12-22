@@ -10,6 +10,7 @@ class TorrentData {
   final String torrentType;
   final bool isProcessed;
   bool hasError;
+  List<TorrentData> children = [];
 
   TorrentData(
       this.displayName,

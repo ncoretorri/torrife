@@ -4,6 +4,8 @@ import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:torri/models/hnr.dart';
+import 'package:torri/models/show_detail.dart';
 import 'package:torri/models/torrent.dart';
 import 'package:torri/utils/ncore_parser.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -19,10 +21,12 @@ class NcoreState extends ChangeNotifier {
 
   late WebViewController controller;
   bool loggedIn = false;
-  List<String> hnrIds = [];
+  List<Hnr> hnrs = [];
 
   UnmodifiableListView<Torrent> get torrents => UnmodifiableListView(_torrents);
   bool get hasNextPage => _hasNextPage;
+
+  ShowDetail? detail;
 
   NcoreState() {
     controller = WebViewController()
@@ -64,11 +68,13 @@ class NcoreState extends ChangeNotifier {
 
       await NcoreParser.prepareLoginScreen(controller);
     } else {
-      if (url.startsWith("https://ncore.pro/torrents.php")) {
+      if (url.startsWith('https://ncore.pro/torrents.php?action=details&id=')) {
+        detail = await NcoreParser.parseTorrentDefails(controller);
+      }
+      else if (url.startsWith("https://ncore.pro/torrents.php")) {
         await NcoreParser.parseTorrents(controller);
       } else if (url.startsWith("https://ncore.pro/hitnrun.php")) {
-        hnrIds = await NcoreParser.getHnRTorrentIds(controller);
-        print(hnrIds);
+        hnrs = await NcoreParser.getHnRTorrents(controller);
       }
 
       loggedIn = true;
@@ -79,6 +85,10 @@ class NcoreState extends ChangeNotifier {
 
   Future loadHnrs() async {
     await controller.loadRequest(Uri.parse('https://ncore.pro/hitnrun.php'));
+  }
+
+  Future loadDetails(String id) async {
+    await controller.loadRequest(Uri.parse('https://ncore.pro/torrents.php?action=details&id=$id'));
   }
 
   Future startSearch(String searchTerm, String orderBy) async {

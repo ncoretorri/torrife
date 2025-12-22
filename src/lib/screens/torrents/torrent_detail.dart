@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:torri/components/loading.dart';
 import 'package:torri/main.dart';
+import 'package:torri/models/hnr.dart';
 import 'package:torri/models/progress.dart';
 import 'package:torri/models/torrent_content.dart';
 import 'package:torri/models/torrent_data.dart';
 import 'package:torri/screens/torrents/masks.dart';
-import 'package:torri/states/ncore_state.dart';
 import 'package:torri/states/torrents_state.dart';
 import 'package:torri/utils/backend.dart';
 import 'package:provider/provider.dart';
@@ -71,10 +71,10 @@ class NodeData {
 }
 
 class TorrentDetail extends StatefulWidget {
-  const TorrentDetail({super.key, required this.torrent, required this.index});
+  const TorrentDetail({super.key, required this.torrent, required this.hnr});
 
   final TorrentData torrent;
-  final int index;
+  final Hnr? hnr;
 
   @override
   State<TorrentDetail> createState() => _TorrentDetailState();
@@ -83,7 +83,6 @@ class TorrentDetail extends StatefulWidget {
 class _TorrentDetailState extends State<TorrentDetail> {
   final f = NumberFormat("###.#");
   final gb = NumberFormat("###.#");
-  late NcoreState _ncoreState;
   late TorrentsState _torrentsState;
   late Progress _progress;
   TreeNode<NodeData> tree = TreeNode.root();
@@ -94,7 +93,6 @@ class _TorrentDetailState extends State<TorrentDetail> {
   @override
   void initState() {
     super.initState();
-    _ncoreState = Provider.of<NcoreState>(context, listen: false);
     _torrentsState = Provider.of<TorrentsState>(context, listen: false);
     _progress =
         Progress(widget.torrent.progress, 0, 0, 0, 0, 0, widget.torrent.status);
@@ -125,7 +123,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
             IconButton(onPressed: pause, icon: Icon(Icons.pause)),
           if (widget.torrent.status != 'Stopped')
             IconButton(onPressed: stop, icon: Icon(Icons.stop)),
-          if (!_ncoreState.hnrIds.contains(widget.torrent.externalId))
+          if (widget.hnr == null)
             IconButton(
                 onPressed: () {
                   showAlertDialog(context);
@@ -161,7 +159,13 @@ class _TorrentDetailState extends State<TorrentDetail> {
                         width: 12,
                       ),
                       Text(
-                          "p/s/l: ${_progress.peers}/${_progress.seeds}/${_progress.leechs}")
+                          "p/s/l: ${_progress.peers}/${_progress.seeds}/${_progress.leechs}"),
+                      if (widget.hnr != null)
+                        SizedBox(
+                          width: 12,
+                        ),
+                      if (widget.hnr != null)
+                        Text("hnr: ${widget.hnr!.left}")
                     ],
                   ),
                   SizedBox(
@@ -183,7 +187,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                     child: TreeView.simple<NodeData>(
                         showRootNode: true,
                         builder: (ctx, node) => ListTile(
-                              tileColor: getTileColor(node.data!),
+                              textColor: getTextColor(node.data!),
                               leading: Checkbox(
                                 value: node.data!.downloading,
                                 tristate: true,
@@ -414,7 +418,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
     Navigator.of(context).pop();
 
     await getIt<Backend>().delete(widget.torrent.hash);
-    _torrentsState.removeAt(widget.index);
+    _torrentsState.remove(widget.torrent);
 
     if (mounted) {
       Navigator.of(context).pop();
@@ -433,24 +437,41 @@ class _TorrentDetailState extends State<TorrentDetail> {
         widget.torrent.progress = _progress.progress;
       });
 
-      _torrentsState.updateStatus(widget.index, _progress.status);
+      _torrentsState.updateStatus(widget.torrent, _progress.status);
 
       _timer = Timer(const Duration(seconds: 3), updateProgress);
     }
   }
 
   Future stop() async {
+    setState(() {
+      _loading = true;
+    });
+
     await getIt<Backend>().stop(widget.torrent.hash);
-    _torrentsState.updateStatus(widget.index, "Stopped");
+
+    setState(() {
+      _torrentsState.updateStatus(widget.torrent, "Stopped");
+      _loading = false;
+    });
   }
 
   Future start() async {
+    setState(() {
+      _loading = true;
+    });
+
     await getIt<Backend>().start(widget.torrent.hash);
+
+    setState(() {
+      _torrentsState.updateStatus(widget.torrent, "Started");
+      _loading = false;
+    });
   }
 
   Future pause() async {
     await getIt<Backend>().pause(widget.torrent.hash);
-    _torrentsState.updateStatus(widget.index, "Paused");
+    _torrentsState.updateStatus(widget.torrent, "Paused");
   }
 
   void openMasks() {
@@ -460,10 +481,10 @@ class _TorrentDetailState extends State<TorrentDetail> {
     );
   }
 
-  Color? getTileColor(NodeData nodeData) {
+  Color? getTextColor(NodeData nodeData) {
     if (nodeData.hasError ||
         (widget.torrent.torrentType == "Serie" && nodeData.data != null && nodeData.data!.hasError)) {
-      return Colors.red.shade900;
+      return Colors.red;
     }
     return null;
   }

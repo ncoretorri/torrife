@@ -5,6 +5,7 @@ import 'package:torri/components/loading.dart';
 import 'package:torri/screens/search/torrent_list.dart';
 import 'package:torri/states/ncore_state.dart';
 import 'package:provider/provider.dart';
+import 'package:torri/states/torrents_state.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key});
@@ -32,6 +33,7 @@ typedef MenuEntry = DropdownMenuEntry<OrderOption>;
 class _SearchState extends State<Search> {
   final FocusNode _focusNode = FocusNode();
   late NcoreState _ncoreState;
+  late TorrentsState _torrentsState;
   bool _loading = false;
   static final List<MenuEntry> menuEntries = UnmodifiableListView<MenuEntry>(
     orderOptions.map<MenuEntry>(
@@ -43,7 +45,16 @@ class _SearchState extends State<Search> {
   void initState() {
     super.initState();
     _ncoreState = Provider.of<NcoreState>(context, listen: false);
+    _torrentsState = Provider.of<TorrentsState>(context, listen: false);
     _focusNode.requestFocus();
+  
+    _ncoreState.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    _ncoreState.removeListener(listener);
+    super.dispose();
   }
 
   @override
@@ -93,8 +104,11 @@ class _SearchState extends State<Search> {
       _loading = true;
     });
 
+    await _torrentsState.load();
     await _ncoreState.startSearch(text, orderBy.value);
+  }
 
+  void listener() {
     if (mounted) {
       setState(() {
         _loading = false;

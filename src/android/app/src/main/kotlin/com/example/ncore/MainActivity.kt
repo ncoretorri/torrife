@@ -1,4 +1,4 @@
-package com.example.torri
+package app.ncoretorri.torri
 
 import io.flutter.embedding.android.FlutterActivity
 

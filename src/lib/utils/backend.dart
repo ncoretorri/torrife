@@ -17,7 +17,7 @@ class Backend {
 
   Backend() {
     _client =
-        Dio(BaseOptions(connectTimeout: const Duration(seconds: 30), headers: {}));
+        Dio(BaseOptions(connectTimeout: const Duration(seconds: 30)));
   }
 
   Future<ShowDetail> getTorrentInfo(String? imdbLink) async {

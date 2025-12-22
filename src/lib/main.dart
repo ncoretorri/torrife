@@ -145,14 +145,14 @@ class _HomeWidgetState extends State<HomeWidget> {
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              leading: Icon(Icons.upload),
-              title: const Text('Feltöltés'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.upload),
+            //   title: const Text('Feltöltés'),
+            //   onTap: () {
+            //     // Update the state of the app.
+            //     // ...
+            //   },
+            // ),
           ],
         ),
       ),

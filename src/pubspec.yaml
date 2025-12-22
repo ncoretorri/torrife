@@ -1,5 +1,5 @@
 name: torri
-description: "A new Flutter project."
+description: "The mobile app for Torri"
 publish_to: 'none'
 version: 0.1.0
 
@@ -24,6 +24,14 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/icon.png"
+  adaptive_icon_foreground: "assets/icon.png"
+  adaptive_icon_background: "#ffffff"
 
 flutter:
   uses-material-design: true

@@ -33,9 +33,14 @@ class _TorrentDetailState extends State<TorrentDetail> {
     _year.text = DateTime.now().year.toString();
     _startDownload = !widget.torrent.isSerie();
 
-    print(widget.torrent.id);
+    _ncoreState.addListener(listener);
+    load();
+  }
 
-    if (widget.torrent.imdbLink != null) getTorrentInfo();
+  @override
+  void dispose() {
+    _ncoreState.removeListener(listener);
+    super.dispose();
   }
 
   @override
@@ -94,11 +99,15 @@ class _TorrentDetailState extends State<TorrentDetail> {
         ));
   }
 
-  Future getTorrentInfo() async {
+  Future load() async {
     setState(() {
       _loading = true;
     });
+    
+    await _ncoreState.loadDetails(widget.torrent.id);
+  }
 
+  Future getTorrentInfo() async {
     var info = await getIt<Backend>().getTorrentInfo(widget.torrent.imdbLink);
 
     if (mounted) {
@@ -130,6 +139,20 @@ class _TorrentDetailState extends State<TorrentDetail> {
 
     if (mounted) {
       Navigator.pop(context);
+    }
+  }
+
+  void listener() {
+    if (_ncoreState.detail != null && _ncoreState.detail!.title.isNotEmpty) {
+      setState(() {
+        _loading = false;
+        _title.text = _ncoreState.detail!.title;
+        _year.text = _ncoreState.detail!.year.toString();
+        _description = _ncoreState.detail!.description;
+      });
+    }
+    else if (widget.torrent.imdbLink != null) {
+      getTorrentInfo();
     }
   }
 }
