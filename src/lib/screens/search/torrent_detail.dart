@@ -23,6 +23,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
   late NcoreState _ncoreState;
   bool _loading = false;
   bool? _startDownload;
+  bool? _addToKodi = true;
   String? _description;
 
   @override
@@ -76,6 +77,13 @@ class _TorrentDetailState extends State<TorrentDetail> {
                     Row(
                       children: [
                         Expanded(child: SizedBox()),
+                        Text("Kodi?"),
+                        Checkbox(
+                          value: _addToKodi,
+                          onChanged: (value) => setState(() {
+                            _addToKodi = value;
+                          }),
+                        ),
                         Text("Start?"),
                         Checkbox(
                           value: _startDownload,
@@ -135,7 +143,8 @@ class _TorrentDetailState extends State<TorrentDetail> {
         widget.torrent.id,
         _title.text,
         _year.text,
-        _startDownload == true);
+        _startDownload == true,
+        _addToKodi == true);
 
     if (mounted) {
       Navigator.pop(context);
