@@ -105,10 +105,11 @@ class Backend {
   }
 
   Future addTorrent(Uint8List bytes, String type, String ncoreId, String title,
-      String year, bool start) async {
+      String year, bool start, bool addToKodi) async {
     var baseUrl = await _getBaseUrl();
     var formData = FormData.fromMap({
       'externalId': ncoreId,
+      'addToKodi': addToKodi,
       'title': title,
       'type': type,
       'year': year,

@@ -102,6 +102,10 @@ class _TorrentsState extends State<Torrents> {
   }
 
   Color? getTileColor(TorrentData info) {
+    if (!info.addToKodi) {
+      return null;
+    }
+    
     if (info.hasError) {
       return Colors.red;
     }
