@@ -154,7 +154,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                   Row(
                     children: [
                       Text(
-                          "d/u: ${gb.format(_progress.downloadRate / 1000 / 1000)}/${gb.format(_progress.uploadRate / 1000 / 1000)}"),
+                          "d/u: ${gb.format(_progress.downloadRate / 1000 / 1000)}/${gb.format(_progress.uploadRate / 1000 / 1000)} Mb/s"),
                       SizedBox(
                         width: 12,
                       ),
@@ -164,8 +164,13 @@ class _TorrentDetailState extends State<TorrentDetail> {
                         SizedBox(
                           width: 12,
                         ),
-                      if (widget.hnr != null)
-                        Text("hnr: ${widget.hnr!.left}")
+                      if (widget.hnr != null) Text("hnr: ${widget.hnr!.left}")
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      if (_progress.status == "Downloading")
+                        Text("eta: ${calculateEta()}")
                     ],
                   ),
                   SizedBox(
@@ -483,9 +488,22 @@ class _TorrentDetailState extends State<TorrentDetail> {
 
   Color? getTextColor(NodeData nodeData) {
     if (nodeData.hasError ||
-        (widget.torrent.torrentType == "Serie" && nodeData.data != null && nodeData.data!.hasError)) {
+        (widget.torrent.torrentType == "Serie" &&
+            nodeData.data != null &&
+            nodeData.data!.hasError)) {
       return Colors.red;
     }
     return null;
+  }
+
+  String calculateEta() {
+    if (_progress.downloadRate == 0) {
+      return "---";
+    }
+
+    var leftBytes = widget.torrent.size * ((100 - _progress.progress) / 100);
+    var leftSeconds = leftBytes / _progress.downloadRate;
+
+    return "${f.format(leftSeconds / 60)} p";
   }
 }

@@ -16,8 +16,7 @@ class Backend {
   late Dio _client;
 
   Backend() {
-    _client =
-        Dio(BaseOptions(connectTimeout: const Duration(seconds: 30)));
+    _client = Dio(BaseOptions(connectTimeout: const Duration(seconds: 30)));
   }
 
   Future<ShowDetail> getTorrentInfo(String? imdbLink) async {
@@ -105,7 +104,7 @@ class Backend {
   }
 
   Future addTorrent(Uint8List bytes, String type, String ncoreId, String title,
-      String year, bool start, bool addToKodi) async {
+      String year, bool start, bool addToKodi, bool stream) async {
     var baseUrl = await _getBaseUrl();
     var formData = FormData.fromMap({
       'externalId': ncoreId,
@@ -114,6 +113,7 @@ class Backend {
       'type': type,
       'year': year,
       'start': start,
+      'stream': stream,
       'file': MultipartFile.fromBytes(bytes,
           filename: 'torrent',
           contentType: MediaType('application', 'x-bittorrent'))
