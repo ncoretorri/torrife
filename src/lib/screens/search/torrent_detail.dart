@@ -22,9 +22,8 @@ class _TorrentDetailState extends State<TorrentDetail> {
   final _year = TextEditingController();
   late NcoreState _ncoreState;
   bool _loading = false;
-  bool? _startDownload;
-  bool? _addToKodi = true;
   String? _description;
+  Set<String> _selection = {};
 
   @override
   void initState() {
@@ -32,7 +31,9 @@ class _TorrentDetailState extends State<TorrentDetail> {
     _ncoreState = Provider.of<NcoreState>(context, listen: false);
     _title.text = widget.torrent.name;
     _year.text = DateTime.now().year.toString();
-    _startDownload = !widget.torrent.isSerie();
+    if (!widget.torrent.isSerie()) {
+      _selection.add("start");
+    }
 
     _ncoreState.addListener(listener);
     load();
@@ -77,20 +78,30 @@ class _TorrentDetailState extends State<TorrentDetail> {
                     Row(
                       children: [
                         Expanded(child: SizedBox()),
-                        Text("Kodi?"),
-                        Checkbox(
-                          value: _addToKodi,
-                          onChanged: (value) => setState(() {
-                            _addToKodi = value;
-                          }),
+                        SegmentedButton<String>(
+                          segments: [
+                            ButtonSegment(
+                                value: "stream", label: Text("Stream")),
+                            ButtonSegment(value: "kodi", label: Text("Kodi")),
+                            ButtonSegment(value: "start", label: Text("Start")),
+                          ],
+                          emptySelectionAllowed: true,
+                          selected: _selection,
+                          onSelectionChanged: (newSelection) {
+                            setState(() {
+                              _selection = newSelection;
+                            });
+                          },
+                          multiSelectionEnabled: true,
                         ),
-                        Text("Start?"),
-                        Checkbox(
-                          value: _startDownload,
-                          onChanged: (value) => setState(() {
-                            _startDownload = value;
-                          }),
-                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 12,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(child: SizedBox()),
                         ElevatedButton(
                             onPressed: downloadFile, child: Text("Letöltés")),
                       ],
@@ -111,7 +122,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
     setState(() {
       _loading = true;
     });
-    
+
     await _ncoreState.loadDetails(widget.torrent.id);
   }
 
@@ -143,8 +154,9 @@ class _TorrentDetailState extends State<TorrentDetail> {
         widget.torrent.id,
         _title.text,
         _year.text,
-        _startDownload == true,
-        _addToKodi == true);
+        _selection.contains("start"),
+        _selection.contains("kodi"),
+        _selection.contains("stream"));
 
     if (mounted) {
       Navigator.pop(context);
@@ -154,13 +166,13 @@ class _TorrentDetailState extends State<TorrentDetail> {
   void listener() {
     if (_ncoreState.detail != null && _ncoreState.detail!.title.isNotEmpty) {
       setState(() {
+        _selection.add("kodi");
         _loading = false;
         _title.text = _ncoreState.detail!.title;
         _year.text = _ncoreState.detail!.year.toString();
         _description = _ncoreState.detail!.description;
       });
-    }
-    else if (widget.torrent.imdbLink != null) {
+    } else if (widget.torrent.imdbLink != null) {
       getTorrentInfo();
     }
   }
