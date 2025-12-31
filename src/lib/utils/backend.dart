@@ -44,25 +44,6 @@ class Backend {
     return list.map((json) => TorrentContent.fromJson(json)).toList();
   }
 
-  Future<List<int>> check(String hash) async {
-    var baseUrl = await _getBaseUrl();
-    var response = await _client.post("$baseUrl/torrent/check",
-        data: {'hash': hash},
-        options: Options(
-            receiveDataWhenStatusError: true,
-            validateStatus: (status) => status == 400 || status == 200));
-    if (response.statusCode == 400) {
-      return List<int>.from(response.data);
-    }
-    return [];
-  }
-
-  Future update(String hash, List<int> active, List<int> inActive) async {
-    var baseUrl = await _getBaseUrl();
-    await _client.post("$baseUrl/torrent/update",
-        data: {'hash': hash, 'active': active, 'inActive': inActive});
-  }
-
   Future pause(String hash) async {
     var baseUrl = await _getBaseUrl();
     await _client.post("$baseUrl/torrent/pause/$hash");
@@ -83,32 +64,17 @@ class Backend {
     await _client.delete("$baseUrl/torrent/$hash");
   }
 
-  Future reset() async {
+  Future organize(String hash) async {
     var baseUrl = await _getBaseUrl();
-    await _client.post("$baseUrl/torrent/restart");
-  }
-
-  Future startAll() async {
-    var baseUrl = await _getBaseUrl();
-    await _client.post("$baseUrl/torrent/startall");
-  }
-
-  Future stopAll() async {
-    var baseUrl = await _getBaseUrl();
-    await _client.post("$baseUrl/torrent/stopall");
-  }
-
-  Future pauseAll() async {
-    var baseUrl = await _getBaseUrl();
-    await _client.post("$baseUrl/torrent/pauseall");
+    await _client.post("$baseUrl/torrent/organize/$hash");
   }
 
   Future addTorrent(Uint8List bytes, String type, String ncoreId, String title,
-      String year, bool start, bool addToKodi, bool stream) async {
+      String year, bool start, bool organizeFiles, bool stream) async {
     var baseUrl = await _getBaseUrl();
     var formData = FormData.fromMap({
       'externalId': ncoreId,
-      'addToKodi': addToKodi,
+      'organizeFiles': organizeFiles,
       'title': title,
       'type': type,
       'year': year,
@@ -134,11 +100,6 @@ class Backend {
     return Progress.fromJson(response.data);
   }
 
-  Future announce(String hash) async {
-    var baseUrl = await _getBaseUrl();
-    await _client.post("$baseUrl/torrent/announce", data: {'hash': hash});
-  }
-
   Future<List<SerieMask>> getMasks(String hash) async {
     var baseUrl = await _getBaseUrl();
     var response = await _client.get("$baseUrl/SerieMasks/$hash");
@@ -148,17 +109,10 @@ class Backend {
 
   Future updateMasks(String hash, List<SerieMask> masks) async {
     var baseUrl = await _getBaseUrl();
-    _client.options.validateStatus = (status) => status == 200 || status == 400;
     var data = {"hash": hash, "serieMasks": masks};
     await _client.put("$baseUrl/SerieMasks",
         data: jsonEncode(data),
         options: Options(headers: {"Content-Type": "application/json"}));
-  }
-
-  Future<String> _getBaseUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    var backendUrl = prefs.getString('backendUrl') ?? '';
-    return backendUrl;
   }
 
   Future<MonoSettings> getMonoSettings() async {
@@ -172,5 +126,11 @@ class Backend {
     await _client.put("$baseUrl/settings",
         data: jsonEncode(settings),
         options: Options(headers: {"Content-Type": "application/json"}));
+  }
+
+  Future<String> _getBaseUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    var backendUrl = prefs.getString('backendUrl') ?? '';
+    return backendUrl;
   }
 }

@@ -18,6 +18,10 @@ class TorrentDetail extends StatefulWidget {
 }
 
 class _TorrentDetailState extends State<TorrentDetail> {
+  final String organize = "organize";
+  final String start = "start";
+  final String stream = "stream";
+
   final _title = TextEditingController();
   final _year = TextEditingController();
   late NcoreState _ncoreState;
@@ -32,7 +36,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
     _title.text = widget.torrent.name;
     _year.text = DateTime.now().year.toString();
     if (!widget.torrent.isSerie()) {
-      _selection.add("start");
+      _selection.add(start);
     }
 
     _ncoreState.addListener(listener);
@@ -80,10 +84,10 @@ class _TorrentDetailState extends State<TorrentDetail> {
                         Expanded(child: SizedBox()),
                         SegmentedButton<String>(
                           segments: [
+                            ButtonSegment(value: stream, label: Text("Stream")),
                             ButtonSegment(
-                                value: "stream", label: Text("Stream")),
-                            ButtonSegment(value: "kodi", label: Text("Kodi")),
-                            ButtonSegment(value: "start", label: Text("Start")),
+                                value: organize, label: Text("Rendez")),
+                            ButtonSegment(value: start, label: Text("Start")),
                           ],
                           emptySelectionAllowed: true,
                           selected: _selection,
@@ -154,9 +158,9 @@ class _TorrentDetailState extends State<TorrentDetail> {
         widget.torrent.id,
         _title.text,
         _year.text,
-        _selection.contains("start"),
-        _selection.contains("kodi"),
-        _selection.contains("stream"));
+        _selection.contains(start),
+        _selection.contains(organize),
+        _selection.contains(stream));
 
     if (mounted) {
       Navigator.pop(context);
@@ -166,7 +170,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
   void listener() {
     if (_ncoreState.detail != null && _ncoreState.detail!.title.isNotEmpty) {
       setState(() {
-        _selection.add("kodi");
+        _selection.add(organize);
         _loading = false;
         _title.text = _ncoreState.detail!.title;
         _year.text = _ncoreState.detail!.year.toString();

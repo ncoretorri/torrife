@@ -1,8 +1,10 @@
 # Torri
 
-Torri is a self-hostable solution to easily manage video torrent files from Hungarian torrent site nCore. It has a backend part and an Android mobile application. It is designed to work with [Kodi](https://kodi.tv/ "Kodi") but you can use any video player.
+Torri is a self-hostable solution to easily manage video torrent files from Hungarian torrent site nCore. It consist of a backend and an Android mobile application.
 
-Torri is not a streaming platform. It just downloads the video files and organizes them. Then you can share the downloads or the Kodi folders through SMB and play the downloaded content on your devices.
+Torri is not a streaming platform. It just downloads the video files and organizes them. Then you can use your favorite streaming platform (Jellyfin, Plex, etc.) or video player (Kodi, VLC through SMB) to play them.
+
+Just open the mobile application, search for a movie or serie, press the download button and you can watch them on your TV/Laptop/Phone.
 
 ## Installation
 

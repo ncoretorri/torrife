@@ -40,6 +40,7 @@ class _SearchState extends State<Search> {
         (OrderOption option) => MenuEntry(value: option, label: option.label)),
   );
   OrderOption orderBy = orderOptions.first;
+  String _initValue = "";
 
   @override
   void initState() {
@@ -47,7 +48,7 @@ class _SearchState extends State<Search> {
     _ncoreState = Provider.of<NcoreState>(context, listen: false);
     _torrentsState = Provider.of<TorrentsState>(context, listen: false);
     _focusNode.requestFocus();
-  
+
     _ncoreState.addListener(listener);
   }
 
@@ -82,7 +83,7 @@ class _SearchState extends State<Search> {
                     child: TextFormField(
                       focusNode: _focusNode,
                       onFieldSubmitted: (t) => startSearch(t),
-                      initialValue: "",
+                      initialValue: _initValue,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Keresés',
@@ -103,6 +104,8 @@ class _SearchState extends State<Search> {
     setState(() {
       _loading = true;
     });
+
+    _initValue = text;
 
     await _torrentsState.load();
     await _ncoreState.startSearch(text, orderBy.value);

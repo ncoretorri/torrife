@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:torri/components/loading.dart';
-import 'package:torri/main.dart';
 import 'package:torri/models/hnr.dart';
 import 'package:torri/models/torrent_data.dart';
 import 'package:torri/screens/torrents/torrent_detail.dart';
 import 'package:torri/states/ncore_state.dart';
 import 'package:torri/states/torrents_state.dart';
-import 'package:torri/utils/backend.dart';
 import 'package:provider/provider.dart';
 
 class Torrents extends StatefulWidget {
@@ -38,10 +36,12 @@ class _TorrentsState extends State<Torrents> {
             children: [
               Row(children: [
                 Text("Csoportosítás"),
-                Checkbox(value: _group, onChanged: (value) => setState(() {
-                  _group = value;
-                  _torrentsState.group(value == true);
-                }))
+                Checkbox(
+                    value: _group,
+                    onChanged: (value) => setState(() {
+                          _group = value;
+                          _torrentsState.group(value == true);
+                        }))
               ]),
               Expanded(
                 child: Consumer<TorrentsState>(
@@ -50,15 +50,13 @@ class _TorrentsState extends State<Torrents> {
                       var torrent = state.torrents[index];
                       if (torrent.children.length < 2) {
                         return createCard(torrent);
-                      }
-                      else {
+                      } else {
                         return ExpansionTile(
-                          title: Text(torrent.displayName),
-                          children: [
-                            for(var child in torrent.children)
-                              createCard(child)
-                          ]
-                        );
+                            title: Text(torrent.displayName),
+                            children: [
+                              for (var child in torrent.children)
+                                createCard(child)
+                            ]);
                       }
                     },
                     separatorBuilder: (ctx, int index) => const Divider(),
@@ -71,7 +69,9 @@ class _TorrentsState extends State<Torrents> {
   }
 
   Card createCard(TorrentData torrent) {
-    var hnr = _ncoreState.hnrs.where((hnr) => hnr.externalId == torrent.externalId).firstOrNull;
+    var hnr = _ncoreState.hnrs
+        .where((hnr) => hnr.externalId == torrent.externalId)
+        .firstOrNull;
 
     return Card(
       child: ListTile(
@@ -88,9 +88,8 @@ class _TorrentsState extends State<Torrents> {
               )
             else
               Icon(Icons.upload,
-                  color: torrent.status == "Stopped"
-                      ? Colors.red
-                      : Colors.green),
+                  color:
+                      torrent.status == "Stopped" ? Colors.red : Colors.green),
           ],
         ),
         subtitle: Text(torrent.torrentName),
@@ -102,10 +101,10 @@ class _TorrentsState extends State<Torrents> {
   }
 
   Color? getTileColor(TorrentData info) {
-    if (!info.addToKodi) {
+    if (!info.organizeFiles) {
       return null;
     }
-    
+
     if (info.hasError) {
       return Colors.red;
     }
@@ -114,34 +113,6 @@ class _TorrentsState extends State<Torrents> {
       return Colors.green.shade900;
     }
     return null;
-  }
-
-  Future startAll() async {
-    setState(() {
-      _loading = true;
-    });
-
-    await getIt<Backend>().startAll();
-
-    if (mounted) {
-      setState(() {
-        _loading = false;
-      });
-    }
-  }
-
-  Future stopAll() async {
-    setState(() {
-      _loading = true;
-    });
-
-    await getIt<Backend>().stopAll();
-
-    if (mounted) {
-      setState(() {
-        _loading = false;
-      });
-    }
   }
 
   Future load() async {

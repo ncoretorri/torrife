@@ -9,7 +9,7 @@ class TorrentData {
   String status;
   final String torrentType;
   final bool isProcessed;
-  final bool addToKodi;
+  final bool organizeFiles;
   bool hasError;
   List<TorrentData> children = [];
 
@@ -25,7 +25,7 @@ class TorrentData {
       this.torrentType,
       this.isProcessed,
       this.hasError,
-      this.addToKodi);
+      this.organizeFiles);
 
   factory TorrentData.fromJson(Map<String, dynamic> json) => TorrentData(
       json["displayName"],
@@ -39,5 +39,5 @@ class TorrentData {
       json["torrentType"],
       json["isProcessed"],
       json["hasError"],
-      json["addToKodi"]);
+      json["organizeFiles"]);
 }

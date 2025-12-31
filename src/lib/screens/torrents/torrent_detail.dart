@@ -6,69 +6,13 @@ import 'package:intl/intl.dart';
 import 'package:torri/components/loading.dart';
 import 'package:torri/main.dart';
 import 'package:torri/models/hnr.dart';
+import 'package:torri/models/node_data.dart';
 import 'package:torri/models/progress.dart';
-import 'package:torri/models/torrent_content.dart';
 import 'package:torri/models/torrent_data.dart';
 import 'package:torri/screens/torrents/masks.dart';
 import 'package:torri/states/torrents_state.dart';
 import 'package:torri/utils/backend.dart';
 import 'package:provider/provider.dart';
-
-class NodeData {
-  final String title;
-  final TorrentContent? data;
-  List<NodeData> children = [];
-
-  bool get isLeaf => data != null;
-
-  bool? get downloading {
-    if (isLeaf) {
-      return data!.wanted;
-    }
-
-    if (children.isNotEmpty) {
-      if (children.every((x) => x.downloading == true)) {
-        return true;
-      }
-
-      if (children.every((x) => x.downloading == false)) {
-        return false;
-      }
-    }
-
-    return null;
-  }
-
-  set downloading(bool? value) {
-    if (isLeaf) {
-      data!.wanted = value == true ? true : false;
-    } else {
-      for (var x in children) {
-        x.downloading = value;
-      }
-    }
-  }
-
-  bool get hasError {
-    if (isLeaf) {
-      return data!.hasError;
-    }
-
-    if (children.isNotEmpty) {
-      return children.any((x) => x.hasError);
-    }
-
-    return false;
-  }
-
-  set hasError(bool value) {
-    if (isLeaf) {
-      data!.hasError = value;
-    }
-  }
-
-  NodeData(this.title, this.data);
-}
 
 class TorrentDetail extends StatefulWidget {
   const TorrentDetail({super.key, required this.torrent, required this.hnr});
@@ -176,18 +120,28 @@ class _TorrentDetailState extends State<TorrentDetail> {
                   SizedBox(
                     height: 12,
                   ),
-                  if (widget.torrent.torrentType == "Serie")
-                    Column(
-                      children: [
+                  Row(
+                    children: [
+                      Expanded(child: SizedBox()),
+                      ElevatedButton(
+                        onPressed: organize,
+                        child: Text("Rendez"),
+                      ),
+                      if (widget.torrent.torrentType == "Serie")
+                        SizedBox(
+                          width: 12,
+                        ),
+                      if (widget.torrent.torrentType == "Serie")
                         ElevatedButton(
                           onPressed: openMasks,
                           child: Text("Maszkok"),
                         ),
-                        SizedBox(
-                          height: 12,
-                        ),
-                      ],
-                    ),
+                      Expanded(child: SizedBox()),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 12,
+                  ),
                   Expanded(
                     child: TreeView.simple<NodeData>(
                         showRootNode: true,
@@ -262,24 +216,12 @@ class _TorrentDetailState extends State<TorrentDetail> {
     }
   }
 
-  Future announce() async {
+  Future organize() async {
     setState(() {
       _loading = true;
     });
 
-    await getIt<Backend>().announce(widget.torrent.hash);
-
-    setState(() {
-      _loading = false;
-    });
-  }
-
-  Future reset() async {
-    setState(() {
-      _loading = true;
-    });
-
-    await getIt<Backend>().reset();
+    await getIt<Backend>().organize(widget.torrent.hash);
 
     setState(() {
       _loading = false;
@@ -302,66 +244,6 @@ class _TorrentDetailState extends State<TorrentDetail> {
     });
   }
 
-  Future navigationPressed(int index) async {
-    setState(() {
-      _loading = true;
-    });
-
-    var backend = getIt<Backend>();
-    switch (index) {
-      case 0:
-        var errors = await backend.check(widget.torrent.hash);
-        setErrors(tree, errors);
-        updateTree();
-        if (errors.isNotEmpty && mounted) {
-          showError(context);
-        }
-        break;
-
-      case 1:
-        List<int> active = [];
-        List<int> inActive = [];
-        loadDownloadStatus(tree, active, inActive);
-        await backend.update(widget.torrent.hash, active, inActive);
-        break;
-
-      case 2:
-        showAlertDialog(context);
-        break;
-    }
-
-    if (mounted) {
-      setState(() {
-        _loading = false;
-      });
-    }
-  }
-
-  void loadDownloadStatus(
-      TreeNode<NodeData> node, List<int> active, List<int> inActive) {
-    if (node.data != null && node.data!.isLeaf) {
-      if (node.data!.downloading == true) {
-        active.add(node.data!.data!.index);
-      } else {
-        inActive.add(node.data!.data!.index);
-      }
-    }
-
-    for (var n in node.childrenAsList) {
-      loadDownloadStatus(n as TreeNode<NodeData>, active, inActive);
-    }
-  }
-
-  void setErrors(TreeNode<NodeData> node, List<int> errors) {
-    if (node.data != null && node.data!.isLeaf) {
-      node.data!.hasError = errors.contains(node.data!.data!.index);
-    }
-
-    for (var n in node.childrenAsList) {
-      setErrors(n as TreeNode<NodeData>, errors);
-    }
-  }
-
   showAlertDialog(BuildContext context) {
     // set up the buttons
     Widget cancelButton = TextButton(
@@ -380,29 +262,6 @@ class _TorrentDetailState extends State<TorrentDetail> {
       actions: [
         cancelButton,
         continueButton,
-      ],
-    ); // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
-
-  showError(BuildContext context) {
-    // set up the buttons
-    Widget cancelButton = TextButton(
-      child: Text("Mégsem"),
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-    );
-    AlertDialog alert = AlertDialog(
-      title: Text("Hiba"),
-      content: Text("Hiányzó maszk"),
-      actions: [
-        cancelButton,
       ],
     ); // show the dialog
     showDialog(
