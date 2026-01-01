@@ -41,7 +41,7 @@ var torrents = Array.from(document.getElementsByClassName("box_torrent"), node =
   };
 });
 TorrentList.postMessage(JSON.stringify({
-  hasNextPage: document.querySelector("#pager_top .active_link + a").href.indexOf("oldal=") != -1,
+  hasNextPage: document.getElementById('nPa') != null,
   torrents: torrents
 }));
 ''');
@@ -68,8 +68,7 @@ TorrentList.postMessage(JSON.stringify({
     await webView.runJavaScript(javascript);
   }
 
-  static Future<List<Hnr>> getHnRTorrents(
-      WebViewController webView) async {
+  static Future<List<Hnr>> getHnRTorrents(WebViewController webView) async {
     var result = await webView.runJavaScriptReturningResult('''
 Array.from(document.getElementsByClassName("hnr_all"), node => {
   return {
@@ -88,7 +87,8 @@ Array.from(document.getElementsByClassName("hnr_all"), node => {
     return List<Hnr>.from(torrentNames.map((item) => Hnr.fromJson(item)));
   }
 
-  static Future<ShowDetail> parseTorrentDefails(WebViewController webView) async {
+  static Future<ShowDetail> parseTorrentDefails(
+      WebViewController webView) async {
     var js = '''
   var node = document.getElementsByClassName("inforbar_txt")[0];
   var a = {
