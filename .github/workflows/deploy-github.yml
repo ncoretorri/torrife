@@ -1,0 +1,61 @@
+name: Deploy to apk GitHub
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: eg. 1.0.0
+        required: true
+
+      description:
+        description: What's new?
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - run: |
+          sed -i 's/^version: .*/version: ${{ github.event.inputs.version }}/' pubspec.yaml
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.35.3
+
+      - run: flutter build apk --profile
+
+      - run: mv build/app/outputs/apk/profile/app-profile.apk Torri-${{ github.event.inputs.version }}.apk
+
+      - name: Create tag
+        uses: actions/github-script@v8
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v${{ github.event.inputs.version }}',
+              sha: context.sha
+            })
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.event.inputs.version }}
+          tag_name: v${{ github.event.inputs.version }}
+          body: ${{ github.event.inputs.description }}
+          draft: false
+          prerelease: false
+          files: |
+            src/Torri-${{ github.event.inputs.version }}.apk
+
