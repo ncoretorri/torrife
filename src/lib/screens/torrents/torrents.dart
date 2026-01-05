@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:torri/components/loading.dart';
 import 'package:torri/models/hnr.dart';
 import 'package:torri/models/torrent_data.dart';
@@ -15,6 +16,7 @@ class Torrents extends StatefulWidget {
 }
 
 class _TorrentsState extends State<Torrents> {
+  final gb = NumberFormat("###.#");
   late NcoreState _ncoreState;
   late TorrentsState _torrentsState;
   bool _loading = false;
@@ -41,7 +43,9 @@ class _TorrentsState extends State<Torrents> {
                     onChanged: (value) => setState(() {
                           _group = value;
                           _torrentsState.group(value == true);
-                        }))
+                        })),
+                Expanded(child: SizedBox()),
+                ElevatedButton(onPressed: load, child: Icon(Icons.refresh))
               ]),
               Expanded(
                 child: Consumer<TorrentsState>(
@@ -93,7 +97,12 @@ class _TorrentsState extends State<Torrents> {
           ],
         ),
         subtitle: Text(torrent.torrentName),
-        trailing: Text(torrent.status),
+        trailing: Column(
+          children: [
+            Text(torrent.status),
+            Text("${gb.format(torrent.size / 1000 / 1000 / 1000)}Gb")
+          ],
+        ),
         onTap: () => openDetails(torrent, hnr),
         tileColor: getTileColor(torrent),
       ),
