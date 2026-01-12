@@ -36,6 +36,9 @@ class _InfoState extends State<Info> {
             labelText: 'Cím',
           ),
         ),
+        SizedBox(
+          height: 12,
+        ),
         ElevatedButton(
           onPressed: save,
           child: Text("Mentés"),
@@ -44,9 +47,13 @@ class _InfoState extends State<Info> {
           onPressed: loadInfo,
           child: Text("Betöltés"),
         ),
+        SizedBox(
+          height: 12,
+        ),
         if (_info != null)
-          Text(
-              "Szabad hely: ${(gb.format(_info!.freeSpace / 1000 / 1000 / 1000))}Gb"),
+          for (var storage in _info!.storages)
+            Text(
+                "${storage.name}: ${(gb.format(storage.freeSpace / 1000 / 1000 / 1000))}/${(gb.format(storage.totalSize / 1000 / 1000 / 1000))}Gb"),
       ],
     );
   }

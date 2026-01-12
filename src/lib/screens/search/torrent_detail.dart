@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:torri/components/loading.dart';
 import 'package:torri/main.dart';
+import 'package:torri/models/sysinfo.dart';
 import 'package:torri/models/torrent.dart';
 import 'package:torri/states/ncore_state.dart';
 import 'package:torri/utils/backend.dart';
@@ -18,6 +20,7 @@ class TorrentDetail extends StatefulWidget {
 }
 
 class _TorrentDetailState extends State<TorrentDetail> {
+  final gb = NumberFormat("###.#");
   final String organize = "organize";
   final String start = "start";
   final String stream = "stream";
@@ -28,6 +31,8 @@ class _TorrentDetailState extends State<TorrentDetail> {
   bool _loading = false;
   String? _description;
   Set<String> _selection = {};
+  SysInfo _sysInfo = SysInfo([]);
+  Storage? _storage;
 
   @override
   void initState() {
@@ -106,6 +111,30 @@ class _TorrentDetailState extends State<TorrentDetail> {
                     Row(
                       children: [
                         Expanded(child: SizedBox()),
+                        DropdownButton<Storage>(
+                          value: _storage,
+                          icon: const Icon(Icons.arrow_downward),
+                          elevation: 16,
+                          style: const TextStyle(color: Colors.deepPurple),
+                          underline: Container(
+                              height: 2, color: Colors.deepPurpleAccent),
+                          onChanged: (Storage? value) {
+                            // This is called when the user selects an item.
+                            setState(() {
+                              _storage = value;
+                            });
+                          },
+                          items: _sysInfo.storages
+                              .map<DropdownMenuItem<Storage>>((Storage value) {
+                            return DropdownMenuItem<Storage>(
+                                value: value,
+                                child: Text(
+                                    "${value.name} (${(gb.format(value.freeSpace / 1000 / 1000 / 1000))} Gb)"));
+                          }).toList(),
+                        ),
+                        SizedBox(
+                          width: 12,
+                        ),
                         ElevatedButton(
                             onPressed: downloadFile, child: Text("Letöltés")),
                       ],
@@ -127,6 +156,8 @@ class _TorrentDetailState extends State<TorrentDetail> {
       _loading = true;
     });
 
+    _sysInfo = await getIt<Backend>().info();
+    _storage = _sysInfo.storages[0];
     await _ncoreState.loadDetails(widget.torrent.id);
   }
 
@@ -154,6 +185,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
   Future add(Uint8List file) async {
     await getIt<Backend>().addTorrent(
         file,
+        _storage!.name,
         widget.torrent.isSerie() ? 'Serie' : 'Movie',
         widget.torrent.id,
         _title.text,

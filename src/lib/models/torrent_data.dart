@@ -10,6 +10,7 @@ class TorrentData {
   final String torrentType;
   final bool isProcessed;
   final bool organizeFiles;
+  final String storage;
   bool hasError;
   List<TorrentData> children = [];
 
@@ -25,7 +26,8 @@ class TorrentData {
       this.torrentType,
       this.isProcessed,
       this.hasError,
-      this.organizeFiles);
+      this.organizeFiles,
+      this.storage);
 
   factory TorrentData.fromJson(Map<String, dynamic> json) => TorrentData(
       json["displayName"],
@@ -39,5 +41,6 @@ class TorrentData {
       json["torrentType"],
       json["isProcessed"],
       json["hasError"],
-      json["organizeFiles"]);
+      json["organizeFiles"],
+      json["storage"]);
 }

@@ -113,6 +113,10 @@ class _TorrentDetailState extends State<TorrentDetail> {
                   ),
                   Row(
                     children: [
+                      Text("Tároló: ${widget.torrent.storage}"),
+                      SizedBox(
+                        width: 12,
+                      ),
                       if (_progress.status == "Downloading")
                         Text("eta: ${calculateEta()}")
                     ],

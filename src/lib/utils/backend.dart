@@ -69,8 +69,16 @@ class Backend {
     await _client.post("$baseUrl/torrent/organize/$hash");
   }
 
-  Future addTorrent(Uint8List bytes, String type, String ncoreId, String title,
-      String year, bool start, bool organizeFiles, bool stream) async {
+  Future addTorrent(
+      Uint8List bytes,
+      String storage,
+      String type,
+      String ncoreId,
+      String title,
+      String year,
+      bool start,
+      bool organizeFiles,
+      bool stream) async {
     var baseUrl = await _getBaseUrl();
     var formData = FormData.fromMap({
       'externalId': ncoreId,
@@ -80,6 +88,7 @@ class Backend {
       'year': year,
       'start': start,
       'stream': stream,
+      'storage': storage,
       'file': MultipartFile.fromBytes(bytes,
           filename: 'torrent',
           contentType: MediaType('application', 'x-bittorrent'))

@@ -1,8 +1,20 @@
 class SysInfo {
-  final num freeSpace;
+  List<Storage> storages = [];
 
-  SysInfo(this.freeSpace);
+  SysInfo(this.storages);
 
   factory SysInfo.fromJson(Map<String, dynamic> json) =>
-      SysInfo(json["freeSpace"]);
+      SysInfo(List<Storage>.from(
+          json["storages"].map((json) => Storage.fromJson(json))));
+}
+
+class Storage {
+  final String name;
+  final num freeSpace;
+  final num totalSize;
+
+  Storage(this.name, this.freeSpace, this.totalSize);
+
+  factory Storage.fromJson(Map<String, dynamic> json) =>
+      Storage(json["name"], json["freeSpace"], json["totalSize"]);
 }

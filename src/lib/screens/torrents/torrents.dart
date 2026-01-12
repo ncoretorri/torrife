@@ -100,7 +100,8 @@ class _TorrentsState extends State<Torrents> {
         trailing: Column(
           children: [
             Text(torrent.status),
-            Text("${gb.format(torrent.size / 1000 / 1000 / 1000)}Gb")
+            Text("${gb.format(torrent.size / 1000 / 1000 / 1000)}Gb"),
+            Text(torrent.storage)
           ],
         ),
         onTap: () => openDetails(torrent, hnr),
