@@ -59,9 +59,15 @@ class Backend {
     await _client.post("$baseUrl/torrent/stop/$hash");
   }
 
-  Future delete(String hash) async {
+  Future delete(String hash, bool removeData, bool removeOrganized) async {
     var baseUrl = await _getBaseUrl();
-    await _client.delete("$baseUrl/torrent/$hash");
+    var data = {
+      "removeData": removeData,
+      "removeOrganized": removeOrganized,
+    };
+    await _client.delete("$baseUrl/torrent/$hash",
+        data: jsonEncode(data),
+        options: Options(headers: {"Content-Type": "application/json"}));
   }
 
   Future organize(String hash) async {
@@ -116,12 +122,14 @@ class Backend {
     return list.map((json) => SerieMask.fromJson(json)).toList();
   }
 
-  Future updateMasks(String hash, List<SerieMask> masks) async {
+  Future<UpdateMasksResponse> updateMasks(
+      String hash, List<SerieMask> masks) async {
     var baseUrl = await _getBaseUrl();
     var data = {"hash": hash, "serieMasks": masks};
-    await _client.put("$baseUrl/SerieMasks",
+    var response = await _client.put("$baseUrl/SerieMasks",
         data: jsonEncode(data),
         options: Options(headers: {"Content-Type": "application/json"}));
+    return UpdateMasksResponse.fromJson(response.data);
   }
 
   Future<MonoSettings> getMonoSettings() async {
@@ -142,4 +150,13 @@ class Backend {
     var backendUrl = prefs.getString('backendUrl') ?? '';
     return backendUrl;
   }
+}
+
+class UpdateMasksResponse {
+  final bool hasMissingRegex;
+
+  UpdateMasksResponse(this.hasMissingRegex);
+
+  factory UpdateMasksResponse.fromJson(Map<String, dynamic> json) =>
+      UpdateMasksResponse(json["hasMissingRegex"]);
 }

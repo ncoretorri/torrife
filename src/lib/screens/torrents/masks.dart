@@ -6,9 +6,10 @@ import 'package:torri/models/torrent_data.dart';
 import 'package:torri/utils/backend.dart';
 
 class Masks extends StatefulWidget {
-  const Masks({super.key, required this.torrent});
+  const Masks({super.key, required this.torrent, required this.updateResult});
 
   final TorrentData torrent;
+  final Function updateResult;
 
   @override
   State<Masks> createState() => _MasksState();
@@ -122,7 +123,10 @@ class _MasksState extends State<Masks> {
       _loading = true;
     });
 
-    await getIt<Backend>().updateMasks(widget.torrent.hash, _masks);
+    var response =
+        await getIt<Backend>().updateMasks(widget.torrent.hash, _masks);
+
+    widget.updateResult(response.hasMissingRegex);
 
     if (mounted) {
       Navigator.of(context).pop();

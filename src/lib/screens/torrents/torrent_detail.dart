@@ -67,12 +67,12 @@ class _TorrentDetailState extends State<TorrentDetail> {
             IconButton(onPressed: pause, icon: Icon(Icons.pause)),
           if (widget.torrent.status != 'Stopped')
             IconButton(onPressed: stop, icon: Icon(Icons.stop)),
-          if (widget.hnr == null)
-            IconButton(
-                onPressed: () {
-                  showAlertDialog(context);
-                },
-                icon: Icon(Icons.delete)),
+          // if (widget.hnr == null)
+          IconButton(
+              onPressed: () {
+                showAlertDialog(context);
+              },
+              icon: Icon(Icons.delete)),
         ],
       ),
       body: Container(
@@ -249,48 +249,12 @@ class _TorrentDetailState extends State<TorrentDetail> {
   }
 
   showAlertDialog(BuildContext context) {
-    // set up the buttons
-    Widget cancelButton = TextButton(
-      child: Text("Mégsem"),
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-    );
-    Widget continueButton = TextButton(
-      child: Text("Mehet"),
-      onPressed: () => deleteTorrent(),
-    ); // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("Törlés"),
-      content: Text("Biztos törlöd a torrentet?"),
-      actions: [
-        cancelButton,
-        continueButton,
-      ],
-    ); // show the dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return alert;
+        return DeleteDialog(deleteTorrent: deleteTorrent);
       },
     );
-  }
-
-  Future deleteTorrent() async {
-    _removing = true;
-
-    setState(() {
-      _loading = true;
-    });
-
-    Navigator.of(context).pop();
-
-    await getIt<Backend>().delete(widget.torrent.hash);
-    _torrentsState.remove(widget.torrent);
-
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
   }
 
   Future updateProgress() async {
@@ -342,10 +306,23 @@ class _TorrentDetailState extends State<TorrentDetail> {
     _torrentsState.updateStatus(widget.torrent, "Paused");
   }
 
+  Future maskUpdate(bool hasMissingRegex) async {
+    setState(() {
+      widget.torrent.hasError = hasMissingRegex;
+    });
+
+    await load();
+  }
+
   void openMasks() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => Masks(torrent: widget.torrent)),
+      MaterialPageRoute(
+        builder: (context) => Masks(
+          torrent: widget.torrent,
+          updateResult: maskUpdate,
+        ),
+      ),
     );
   }
 
@@ -368,5 +345,91 @@ class _TorrentDetailState extends State<TorrentDetail> {
     var leftSeconds = leftBytes / _progress.downloadRate;
 
     return "${f.format(leftSeconds / 60)} p";
+  }
+
+  Future deleteTorrent(bool removeData, bool removeOrganized) async {
+    _removing = true;
+
+    setState(() {
+      _loading = true;
+    });
+
+    Navigator.of(context).pop();
+
+    await getIt<Backend>()
+        .delete(widget.torrent.hash, removeData, removeOrganized);
+    _torrentsState.remove(widget.torrent);
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+}
+
+class DeleteDialog extends StatefulWidget {
+  const DeleteDialog({super.key, required this.deleteTorrent});
+  final Function deleteTorrent;
+
+  @override
+  State<DeleteDialog> createState() => _DeleteDialogState();
+}
+
+class _DeleteDialogState extends State<DeleteDialog> {
+  bool? removeData = false;
+  bool? removeOrganized = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text("Törlés"),
+      content: SizedBox(
+        height: 119,
+        child: Column(
+          children: [
+            Text("Biztos törlöd a torrentet?"),
+            Row(
+              children: [
+                Expanded(child: SizedBox()),
+                Text("Adat törlése"),
+                Checkbox(
+                  value: removeData,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      removeData = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(child: SizedBox()),
+                Text("Rendezés törlése"),
+                Checkbox(
+                  value: removeOrganized,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      removeOrganized = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          child: Text("Mégsem"),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: Text("Mehet"),
+          onPressed: () => widget.deleteTorrent(removeData, removeOrganized),
+        )
+      ],
+    );
   }
 }

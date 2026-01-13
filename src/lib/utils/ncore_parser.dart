@@ -100,7 +100,7 @@ Array.from(document.getElementsByClassName("hnr_all"), node => {
   if (node) {
     var data = node.innerText.split('\\n').map(x => x.split(':\\t'));
     a = {
-      title: data[0][0],
+      title: data[0][1] ?? data[0][0],
       year: Number(data.find(x => x[0] == "Megjelenés éve")[1]),
       description: data.filter(x => x.length == 2 && x[0].indexOf('link') == -1 && x[0].indexOf('Megjelenés') == -1).map(x => x.join(': ')).join('\\n')
     }
