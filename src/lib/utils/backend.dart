@@ -145,6 +145,33 @@ class Backend {
         options: Options(headers: {"Content-Type": "application/json"}));
   }
 
+  Future<List<Entry>> getEntries(
+      String storageName, String relativePath) async {
+    var baseUrl = await _getBaseUrl();
+    var response =
+        await _client.get("$baseUrl/organize/$storageName", queryParameters: {
+      "relativePath": relativePath,
+    });
+    List<dynamic> list = response.data;
+    return list.map((json) => Entry.fromJson(json)).toList();
+  }
+
+  Future queueConvert(String storageName, String relativePath) async {
+    var baseUrl = await _getBaseUrl();
+    var data = {"storageName": storageName, "relativePath": relativePath};
+    await _client.post("$baseUrl/organize",
+        data: jsonEncode(data),
+        options: Options(headers: {"Content-Type": "application/json"}));
+  }
+
+  Future cancelConvert(String storageName, String relativePath) async {
+    var baseUrl = await _getBaseUrl();
+    var data = {"storageName": storageName, "relativePath": relativePath};
+    await _client.delete("$baseUrl/organize",
+        data: jsonEncode(data),
+        options: Options(headers: {"Content-Type": "application/json"}));
+  }
+
   Future<String> _getBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
     var backendUrl = prefs.getString('backendUrl') ?? '';
@@ -159,4 +186,16 @@ class UpdateMasksResponse {
 
   factory UpdateMasksResponse.fromJson(Map<String, dynamic> json) =>
       UpdateMasksResponse(json["hasMissingRegex"]);
+}
+
+class Entry {
+  final String name;
+  final bool isDirectory;
+  final bool isQueued;
+  final bool isFinished;
+
+  Entry(this.name, this.isDirectory, this.isQueued, this.isFinished);
+
+  factory Entry.fromJson(Map<String, dynamic> json) => Entry(
+      json["name"], json["isDirectory"], json["isQueued"], json["isFinished"]);
 }

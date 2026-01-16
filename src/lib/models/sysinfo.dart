@@ -3,9 +3,8 @@ class SysInfo {
 
   SysInfo(this.storages);
 
-  factory SysInfo.fromJson(Map<String, dynamic> json) =>
-      SysInfo(List<Storage>.from(
-          json["storages"].map((json) => Storage.fromJson(json))));
+  factory SysInfo.fromJson(Map<String, dynamic> json) => SysInfo(
+      List<Storage>.from(json["storages"].map((j) => Storage.fromJson(j))));
 }
 
 class Storage {

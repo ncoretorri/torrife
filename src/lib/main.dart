@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
+import 'package:torri/screens/converter/converter.dart';
 import 'package:torri/screens/info/info.dart';
 import 'package:torri/screens/search/search.dart';
 import 'package:torri/screens/settings/settings.dart';
@@ -60,14 +61,16 @@ class _HomeWidgetState extends State<HomeWidget> {
     Info(),
     Torrents(),
     Search(),
-    Settings()
+    Settings(),
+    Converter()
   ];
 
   static const List<String> _titles = <String>[
     "Info",
     "Torrentek",
     "Keresés",
-    "Beállítások"
+    "Beállítások",
+    "Konvertáló"
   ];
 
   @override
@@ -145,6 +148,17 @@ class _HomeWidgetState extends State<HomeWidget> {
                 Navigator.pop(context);
               },
             ),
+            ListTile(
+              leading: Icon(Icons.cached),
+              title: const Text('Konvertáló'),
+              onTap: () {
+                setState(() {
+                  _selectedIndex = 4;
+                });
+                Navigator.pop(context);
+              },
+            ),
+
             // ListTile(
             //   leading: Icon(Icons.upload),
             //   title: const Text('Feltöltés'),
