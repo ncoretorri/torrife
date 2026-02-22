@@ -129,7 +129,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                             return DropdownMenuItem<Storage>(
                                 value: value,
                                 child: Text(
-                                    "${value.name} (${(gb.format(value.freeSpace / 1000 / 1000 / 1000))} Gb)"));
+                                    "${value.name} (${(gb.format(value.freeSpace / 1024 / 1024 / 1024))} Gb)"));
                           }).toList(),
                         ),
                         SizedBox(

@@ -88,7 +88,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                         width: 24,
                       ),
                       Text(
-                          "Méret: ${gb.format(widget.torrent.size / 1000 / 1000 / 1000)}Gb"),
+                          "Méret: ${gb.format(widget.torrent.size / 1024 / 1024 / 1024)}Gb"),
                       SizedBox(
                         width: 24,
                       ),
@@ -98,7 +98,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                   Row(
                     children: [
                       Text(
-                          "d/u: ${gb.format(_progress.downloadRate / 1000 / 1000)}/${gb.format(_progress.uploadRate / 1000 / 1000)} Mb/s"),
+                          "d/u: ${gb.format(_progress.downloadRate / 1024 / 1024)}/${gb.format(_progress.uploadRate / 1024 / 1024)} Mb/s"),
                       SizedBox(
                         width: 12,
                       ),
@@ -140,6 +140,13 @@ class _TorrentDetailState extends State<TorrentDetail> {
                           onPressed: openMasks,
                           child: Text("Maszkok"),
                         ),
+                      SizedBox(
+                        width: 12,
+                      ),
+                      ElevatedButton(
+                        onPressed: saveContentPriorities,
+                        child: Text("Mentés"),
+                      ),
                       Expanded(child: SizedBox()),
                     ],
                   ),
@@ -160,7 +167,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                                   ? Column(
                                       children: [
                                         Text(
-                                            "${gb.format(node.data!.data!.size / 1000 / 1000)}Mb"),
+                                            "${gb.format(node.data!.data!.size / 1024 / 1024)}Mb"),
                                         Text(
                                             "${f.format(node.data!.data!.percentComplete)}%")
                                       ],
@@ -226,6 +233,38 @@ class _TorrentDetailState extends State<TorrentDetail> {
     });
 
     await getIt<Backend>().organize(widget.torrent.hash);
+
+    setState(() {
+      _loading = false;
+    });
+  }
+
+  Future saveContentPriorities() async {
+    setState(() {
+      _loading = true;
+    });
+
+    List<int> active = [];
+    List<int> inActive = [];
+
+    void traverse(TreeNode<NodeData> node) {
+      if (node.data != null && node.data!.isLeaf) {
+        if (node.data!.downloading == true) {
+          active.add(node.data!.data!.index);
+        } else {
+          inActive.add(node.data!.data!.index);
+        }
+      }
+
+      for (var n in node.childrenAsList) {
+        traverse(n as TreeNode<NodeData>);
+      }
+    }
+
+    traverse(tree);
+
+    await getIt<Backend>()
+        .updateContentPriorities(widget.torrent.hash, active, inActive);
 
     setState(() {
       _loading = false;
@@ -333,6 +372,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
             nodeData.data!.hasError)) {
       return Colors.red;
     }
+    if (nodeData.hasError) print('OK');
     return null;
   }
 

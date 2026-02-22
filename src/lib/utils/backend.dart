@@ -132,6 +132,13 @@ class Backend {
     return UpdateMasksResponse.fromJson(response.data);
   }
 
+  Future updateContentPriorities(
+      String hash, List<int> active, List<int> inActive) async {
+    var baseUrl = await _getBaseUrl();
+    await _client.put("$baseUrl/torrent/content",
+        data: {'hash': hash, 'active': active, 'inActive': inActive});
+  }
+
   Future<MonoSettings> getMonoSettings() async {
     var baseUrl = await _getBaseUrl();
     var response = await _client.get("$baseUrl/settings");

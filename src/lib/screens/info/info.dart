@@ -53,7 +53,7 @@ class _InfoState extends State<Info> {
         if (_info != null)
           for (var storage in _info!.storages)
             Text(
-                "${storage.name}: ${(gb.format(storage.freeSpace / 1000 / 1000 / 1000))}/${(gb.format(storage.totalSize / 1000 / 1000 / 1000))}Gb"),
+                "${storage.name}: ${(gb.format(storage.freeSpace / 1024 / 1024 / 1024))}/${(gb.format(storage.totalSize / 1024 / 1024 / 1024))}Gb"),
       ],
     );
   }
