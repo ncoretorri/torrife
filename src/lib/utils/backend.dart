@@ -11,6 +11,7 @@ import 'package:torri/models/sysinfo.dart';
 import 'package:torri/models/torrent_content.dart';
 import 'package:torri/models/torrent_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:torri/models/torrent_progress.dart';
 
 class Backend {
   late Dio _client;
@@ -84,7 +85,8 @@ class Backend {
       String year,
       bool start,
       bool organizeFiles,
-      bool stream) async {
+      bool stream,
+      String torrentEngine) async {
     var baseUrl = await _getBaseUrl();
     var formData = FormData.fromMap({
       'externalId': ncoreId,
@@ -95,6 +97,7 @@ class Backend {
       'start': start,
       'stream': stream,
       'storage': storage,
+      'torrentEngine': torrentEngine,
       'file': MultipartFile.fromBytes(bytes,
           filename: 'torrent',
           contentType: MediaType('application', 'x-bittorrent'))
@@ -109,10 +112,17 @@ class Backend {
     return SysInfo.fromJson(response.data);
   }
 
-  Future<Progress> getProgress(String hash) async {
+  Future<TorrentProgress> getProgress(String hash) async {
     var baseUrl = await _getBaseUrl();
     var response = await _client.get("$baseUrl/torrent/progress/$hash");
-    return Progress.fromJson(response.data);
+    return TorrentProgress.fromJson(response.data);
+  }
+
+  Future<List<Progress>> getProgresses() async {
+    var baseUrl = await _getBaseUrl();
+    var response = await _client.get("$baseUrl/torrent/progress");
+    List<dynamic> list = response.data;
+    return list.map((json) => Progress.fromJson(json)).toList();
   }
 
   Future<List<SerieMask>> getMasks(String hash) async {

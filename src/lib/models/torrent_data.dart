@@ -2,13 +2,14 @@ class TorrentData {
   final String displayName;
   final String torrentName;
   final String hash;
-  final bool paused;
   num progress;
+  num downloadRate;
+  num uploadRate;
   final String externalId;
   final num size;
   String status;
   final String torrentType;
-  final bool isProcessed;
+  bool isProcessed;
   final bool organizeFiles;
   final String storage;
   bool hasError;
@@ -19,7 +20,8 @@ class TorrentData {
       this.torrentName,
       this.hash,
       this.progress,
-      this.paused,
+      this.downloadRate,
+      this.uploadRate,
       this.externalId,
       this.size,
       this.status,
@@ -30,17 +32,19 @@ class TorrentData {
       this.storage);
 
   factory TorrentData.fromJson(Map<String, dynamic> json) => TorrentData(
-      json["displayName"],
-      json["torrentName"],
-      json["hash"],
-      json["progress"],
-      json["paused"],
-      json["externalId"],
-      json["size"],
-      json["status"],
-      json["torrentType"],
-      json["isProcessed"],
-      json["hasError"],
-      json["organizeFiles"],
-      json["storage"]);
+        json["displayName"],
+        json["torrentName"],
+        json["hash"],
+        json["progress"],
+        json["downloadRate"],
+        json["uploadRate"],
+        json["externalId"],
+        json["size"],
+        json["status"],
+        json["torrentType"],
+        json["isProcessed"],
+        json["hasError"],
+        json["organizeFiles"],
+        json["storage"],
+      );
 }

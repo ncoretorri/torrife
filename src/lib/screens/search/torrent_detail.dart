@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:torri/components/loading.dart';
+import 'package:torri/utils/utils.dart';
+import 'package:torri/widgets/loading.dart';
 import 'package:torri/main.dart';
 import 'package:torri/models/sysinfo.dart';
 import 'package:torri/models/torrent.dart';
@@ -20,7 +20,6 @@ class TorrentDetail extends StatefulWidget {
 }
 
 class _TorrentDetailState extends State<TorrentDetail> {
-  final gb = NumberFormat("###.#");
   final String organize = "organize";
   final String start = "start";
   final String stream = "stream";
@@ -30,9 +29,12 @@ class _TorrentDetailState extends State<TorrentDetail> {
   late NcoreState _ncoreState;
   bool _loading = false;
   String? _description;
+  String? _fullData;
   Set<String> _selection = {};
-  SysInfo _sysInfo = SysInfo([]);
+  SysInfo _sysInfo = SysInfo([], []);
   Storage? _storage;
+  Set<String> _torrentEngine = {};
+  List<Storage> _storages = [];
 
   @override
   void initState() {
@@ -57,7 +59,10 @@ class _TorrentDetailState extends State<TorrentDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(widget.torrent.name)),
+        appBar: AppBar(
+          title: Text(widget.torrent.name),
+          forceMaterialTransparency: true,
+        ),
         body: Container(
           padding: EdgeInsets.all(12.0),
           child: _loading
@@ -111,6 +116,33 @@ class _TorrentDetailState extends State<TorrentDetail> {
                     Row(
                       children: [
                         Expanded(child: SizedBox()),
+                        SegmentedButton<String>(
+                          segments: [
+                            for (var engine in _sysInfo.torrentEngines)
+                              ButtonSegment(value: engine, label: Text(engine)),
+                          ],
+                          emptySelectionAllowed: false,
+                          selected: _torrentEngine,
+                          onSelectionChanged: (newSelection) {
+                            setState(() {
+                              _torrentEngine = newSelection;
+                              var torrentEngine = _torrentEngine.first;
+                              _storages = _sysInfo.storages
+                                  .where((x) =>
+                                      x.torrentEngines.contains(torrentEngine))
+                                  .toList();
+                            });
+                          },
+                          multiSelectionEnabled: false,
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 12,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(child: SizedBox()),
                         DropdownButton<Storage>(
                           value: _storage,
                           icon: const Icon(Icons.arrow_downward),
@@ -124,12 +156,12 @@ class _TorrentDetailState extends State<TorrentDetail> {
                               _storage = value;
                             });
                           },
-                          items: _sysInfo.storages
+                          items: _storages
                               .map<DropdownMenuItem<Storage>>((Storage value) {
                             return DropdownMenuItem<Storage>(
                                 value: value,
                                 child: Text(
-                                    "${value.name} (${(gb.format(value.freeSpace / 1024 / 1024 / 1024))} Gb)"));
+                                    "${value.name} (${Utils.formatBytes(value.freeSpace)})"));
                           }).toList(),
                         ),
                         SizedBox(
@@ -142,9 +174,25 @@ class _TorrentDetailState extends State<TorrentDetail> {
                     SizedBox(
                       height: 12,
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Text(_description ?? ''),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Text(_description ?? ''),
+                            ),
+                            SizedBox(
+                              height: 12,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Text(_fullData ?? ''),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -157,7 +205,13 @@ class _TorrentDetailState extends State<TorrentDetail> {
     });
 
     _sysInfo = await getIt<Backend>().info();
-    _storage = _sysInfo.storages[0];
+    var torrentEngine = _sysInfo.torrentEngines[0];
+    _torrentEngine = {torrentEngine};
+    _storages = _sysInfo.storages
+        .where((x) => x.torrentEngines.contains(torrentEngine))
+        .toList();
+    _storage = _storages.isNotEmpty ? _storages[0] : null;
+
     await _ncoreState.loadDetails(widget.torrent.id);
   }
 
@@ -192,7 +246,8 @@ class _TorrentDetailState extends State<TorrentDetail> {
         _year.text,
         _selection.contains(start),
         _selection.contains(organize),
-        _selection.contains(stream));
+        _selection.contains(stream),
+        _torrentEngine.first);
 
     if (mounted) {
       Navigator.pop(context);
@@ -207,6 +262,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
         _title.text = _ncoreState.detail!.title;
         _year.text = _ncoreState.detail!.year.toString();
         _description = _ncoreState.detail!.description;
+        _fullData = _ncoreState.detail!.fullData;
       });
     } else if (widget.torrent.imdbLink != null) {
       getTorrentInfo();

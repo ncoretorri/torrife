@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:torri/main.dart';
+import 'package:torri/models/progress.dart';
 import 'package:torri/models/torrent_data.dart';
 import 'package:torri/utils/backend.dart';
 
@@ -25,10 +26,27 @@ class TorrentsState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateProgresses(List<Progress> progresses) {
+    for (final torrent in torrents) {
+      for (final progress in progresses) {
+        if (torrent.hash == progress.hash) {
+          torrent.uploadRate = progress.uploadRate;
+          torrent.downloadRate = progress.downloadRate;
+          torrent.isProcessed = progress.isProcessed;
+          torrent.progress = progress.progress;
+          torrent.status = progress.status;
+          break;
+        }
+      }
+    }
+
+    notifyListeners();
+  }
+
   void group(bool group) {
     if (group) {
       List<TorrentData> list = [];
-  
+
       for (final torrent in torrents) {
         TorrentData? parent;
         for (final torrent2 in list) {
@@ -42,15 +60,13 @@ class TorrentsState extends ChangeNotifier {
           torrent.children = [];
           torrent.children.add(torrent);
           list.add(torrent);
-        }
-        else {
+        } else {
           parent.children.add(torrent);
         }
       }
 
       torrents = list;
-    }
-    else {
+    } else {
       torrents = _temp;
       for (final torrent in _temp) {
         torrent.children = [];

@@ -94,7 +94,8 @@ Array.from(document.getElementsByClassName("hnr_all"), node => {
   var a = {
     title: '',
     year: 0,
-    description: ''
+    description: '',
+    fullData: ''
   }
 
   if (node) {
@@ -102,7 +103,8 @@ Array.from(document.getElementsByClassName("hnr_all"), node => {
     a = {
       title: data[0][1] ?? data[0][0],
       year: Number(data.find(x => x[0] == "Megjelenés éve")[1]),
-      description: data.filter(x => x.length == 2 && x[0].indexOf('link') == -1 && x[0].indexOf('Megjelenés') == -1).map(x => x.join(': ')).join('\\n')
+      description: data.filter(x => x.length == 2 && x[0].indexOf('link') == -1 && x[0].indexOf('Megjelenés') == -1).map(x => x.join(': ')).join('\\n'),
+      fullData: node.innerText
     }
   }
   a

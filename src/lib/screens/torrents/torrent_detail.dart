@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:torri/components/loading.dart';
+import 'package:torri/utils/utils.dart';
+import 'package:torri/widgets/delete_dialog.dart';
+import 'package:torri/widgets/loading.dart';
 import 'package:torri/main.dart';
 import 'package:torri/models/hnr.dart';
 import 'package:torri/models/node_data.dart';
-import 'package:torri/models/progress.dart';
 import 'package:torri/models/torrent_data.dart';
+import 'package:torri/models/torrent_progress.dart';
 import 'package:torri/screens/torrents/masks.dart';
 import 'package:torri/states/torrents_state.dart';
 import 'package:torri/utils/backend.dart';
@@ -25,10 +27,9 @@ class TorrentDetail extends StatefulWidget {
 }
 
 class _TorrentDetailState extends State<TorrentDetail> {
-  final f = NumberFormat("###.#");
-  final gb = NumberFormat("###.#");
+  static final f = NumberFormat("###.#");
   late TorrentsState _torrentsState;
-  late Progress _progress;
+  late TorrentProgress _progress;
   TreeNode<NodeData> tree = TreeNode.root();
   bool _loading = false;
   Timer? _timer;
@@ -38,8 +39,8 @@ class _TorrentDetailState extends State<TorrentDetail> {
   void initState() {
     super.initState();
     _torrentsState = Provider.of<TorrentsState>(context, listen: false);
-    _progress =
-        Progress(widget.torrent.progress, 0, 0, 0, 0, 0, widget.torrent.status);
+    _progress = TorrentProgress(
+        widget.torrent.progress, 0, 0, 0, 0, 0, widget.torrent.status);
 
     updateProgress();
     load();
@@ -67,12 +68,12 @@ class _TorrentDetailState extends State<TorrentDetail> {
             IconButton(onPressed: pause, icon: Icon(Icons.pause)),
           if (widget.torrent.status != 'Stopped')
             IconButton(onPressed: stop, icon: Icon(Icons.stop)),
-          // if (widget.hnr == null)
-          IconButton(
-              onPressed: () {
-                showAlertDialog(context);
-              },
-              icon: Icon(Icons.delete)),
+          if (widget.hnr == null)
+            IconButton(
+                onPressed: () {
+                  showAlertDialog(context);
+                },
+                icon: Icon(Icons.delete)),
         ],
       ),
       body: Container(
@@ -87,8 +88,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                       SizedBox(
                         width: 24,
                       ),
-                      Text(
-                          "Méret: ${gb.format(widget.torrent.size / 1024 / 1024 / 1024)}Gb"),
+                      Text("Méret: ${Utils.formatBytes(widget.torrent.size)}"),
                       SizedBox(
                         width: 24,
                       ),
@@ -98,7 +98,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                   Row(
                     children: [
                       Text(
-                          "d/u: ${gb.format(_progress.downloadRate / 1024 / 1024)}/${gb.format(_progress.uploadRate / 1024 / 1024)} Mb/s"),
+                          "d/u: ${Utils.formatBytes(_progress.downloadRate)}/${Utils.formatBytes(_progress.uploadRate)}"),
                       SizedBox(
                         width: 12,
                       ),
@@ -167,7 +167,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
                                   ? Column(
                                       children: [
                                         Text(
-                                            "${gb.format(node.data!.data!.size / 1024 / 1024)}Mb"),
+                                            "${Utils.formatBytes(node.data!.data!.size)}"),
                                         Text(
                                             "${f.format(node.data!.data!.percentComplete)}%")
                                       ],
@@ -403,73 +403,5 @@ class _TorrentDetailState extends State<TorrentDetail> {
     if (mounted) {
       Navigator.of(context).pop();
     }
-  }
-}
-
-class DeleteDialog extends StatefulWidget {
-  const DeleteDialog({super.key, required this.deleteTorrent});
-  final Function deleteTorrent;
-
-  @override
-  State<DeleteDialog> createState() => _DeleteDialogState();
-}
-
-class _DeleteDialogState extends State<DeleteDialog> {
-  bool? removeData = false;
-  bool? removeOrganized = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text("Törlés"),
-      content: SizedBox(
-        height: 119,
-        child: Column(
-          children: [
-            Text("Biztos törlöd a torrentet?"),
-            Row(
-              children: [
-                Expanded(child: SizedBox()),
-                Text("Adat törlése"),
-                Checkbox(
-                  value: removeData,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      removeData = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(child: SizedBox()),
-                Text("Rendezés törlése"),
-                Checkbox(
-                  value: removeOrganized,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      removeOrganized = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          child: Text("Mégsem"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        TextButton(
-          child: Text("Mehet"),
-          onPressed: () => widget.deleteTorrent(removeData, removeOrganized),
-        )
-      ],
-    );
   }
 }

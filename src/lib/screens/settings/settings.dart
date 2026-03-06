@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:torri/components/loading.dart';
+import 'package:torri/widgets/loading.dart';
 import 'package:torri/main.dart';
 import 'package:torri/models/mono_settings.dart';
 import 'package:torri/utils/backend.dart';

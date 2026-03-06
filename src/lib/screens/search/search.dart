@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:torri/components/loading.dart';
+import 'package:torri/widgets/loading.dart';
 import 'package:torri/screens/search/torrent_list.dart';
 import 'package:torri/states/ncore_state.dart';
 import 'package:provider/provider.dart';

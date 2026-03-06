@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:torri/main.dart';
 import 'package:torri/models/sysinfo.dart';
 import 'package:torri/utils/backend.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:torri/utils/utils.dart';
 
 class Info extends StatefulWidget {
   const Info({super.key});
@@ -16,7 +16,6 @@ class Info extends StatefulWidget {
 
 class _InfoState extends State<Info> {
   final _backendUrl = TextEditingController();
-  final gb = NumberFormat("###.#");
   SysInfo? _info;
 
   @override
@@ -53,7 +52,7 @@ class _InfoState extends State<Info> {
         if (_info != null)
           for (var storage in _info!.storages)
             Text(
-                "${storage.name}: ${(gb.format(storage.freeSpace / 1024 / 1024 / 1024))}/${(gb.format(storage.totalSize / 1024 / 1024 / 1024))}Gb"),
+                "${storage.name}: ${Utils.formatBytes(storage.freeSpace)}/${Utils.formatBytes(storage.totalSize)}"),
       ],
     );
   }

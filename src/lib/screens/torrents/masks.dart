@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:torri/components/loading.dart';
+import 'package:torri/widgets/loading.dart';
 import 'package:torri/main.dart';
 import 'package:torri/models/seriemask.dart';
 import 'package:torri/models/torrent_data.dart';
