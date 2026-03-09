@@ -32,7 +32,7 @@ class _TorrentsState extends State<Torrents> with WidgetsBindingObserver {
     _ncoreState = Provider.of<NcoreState>(context, listen: false);
     _torrentsState = Provider.of<TorrentsState>(context, listen: false);
     load();
-    _timer = Timer(const Duration(seconds: 3), updateProgress);
+    _timer = Timer(const Duration(seconds: 2), updateProgress);
   }
 
   @override
@@ -124,7 +124,7 @@ class _TorrentsState extends State<Torrents> with WidgetsBindingObserver {
         _torrentsState.updateProgresses(progresses);
       });
 
-      _timer = Timer(const Duration(seconds: 3), updateProgress);
+      _timer = Timer(const Duration(seconds: 2), updateProgress);
     }
   }
 }

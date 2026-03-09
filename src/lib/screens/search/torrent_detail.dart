@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:torri/models/show_detail.dart';
 import 'package:torri/utils/utils.dart';
 import 'package:torri/widgets/loading.dart';
 import 'package:torri/main.dart';
@@ -29,12 +30,15 @@ class _TorrentDetailState extends State<TorrentDetail> {
   late NcoreState _ncoreState;
   bool _loading = false;
   String? _description;
-  String? _fullData;
+  String? _others;
+  List<Comment> _comments = [];
   Set<String> _selection = {};
   SysInfo _sysInfo = SysInfo([], []);
   Storage? _storage;
   Set<String> _torrentEngine = {};
   List<Storage> _storages = [];
+  bool _titleError = false;
+  bool _yearError = false;
 
   @override
   void initState() {
@@ -71,9 +75,17 @@ class _TorrentDetailState extends State<TorrentDetail> {
                   children: [
                     TextField(
                       controller: _title,
+                      onChanged: (_) {
+                        if (_titleError && _title.text.trim().isNotEmpty) {
+                          setState(() {
+                            _titleError = false;
+                          });
+                        }
+                      },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Cím',
+                        errorText: _titleError ? '' : null,
                       ),
                     ),
                     SizedBox(
@@ -81,9 +93,17 @@ class _TorrentDetailState extends State<TorrentDetail> {
                     ),
                     TextField(
                       controller: _year,
+                      onChanged: (_) {
+                        if (_yearError && _year.text.trim().isNotEmpty) {
+                          setState(() {
+                            _yearError = false;
+                          });
+                        }
+                      },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Év',
+                        errorText: _yearError ? '' : null,
                       ),
                     ),
                     SizedBox(
@@ -181,6 +201,13 @@ class _TorrentDetailState extends State<TorrentDetail> {
                           children: [
                             Padding(
                               padding: EdgeInsets.all(8),
+                              child: Text(
+                                "Leírás:",
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8),
                               child: Text(_description ?? ''),
                             ),
                             SizedBox(
@@ -188,8 +215,37 @@ class _TorrentDetailState extends State<TorrentDetail> {
                             ),
                             Padding(
                               padding: EdgeInsets.all(8),
-                              child: Text(_fullData ?? ''),
+                              child: Text(
+                                "Adatok:",
+                                style: TextStyle(fontSize: 20),
+                              ),
                             ),
+                            Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Text(_others ?? ''),
+                            ),
+                            SizedBox(
+                              height: 12,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Text("Kommentek:",
+                                  style: TextStyle(fontSize: 20)),
+                            ),
+                            for (var comment in _comments)
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(comment.sender,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 4),
+                                    Text(comment.message)
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -229,6 +285,17 @@ class _TorrentDetailState extends State<TorrentDetail> {
   }
 
   Future downloadFile() async {
+    final isTitleEmpty = _title.text.trim().isEmpty;
+    final isYearEmpty = _year.text.trim().isEmpty;
+
+    if (isTitleEmpty || isYearEmpty) {
+      setState(() {
+        _titleError = isTitleEmpty;
+        _yearError = isYearEmpty;
+      });
+      return;
+    }
+
     setState(() {
       _loading = true;
     });
@@ -260,9 +327,10 @@ class _TorrentDetailState extends State<TorrentDetail> {
         _selection.add(organize);
         _loading = false;
         _title.text = _ncoreState.detail!.title;
-        _year.text = _ncoreState.detail!.year.toString();
+        _year.text = _ncoreState.detail!.year;
         _description = _ncoreState.detail!.description;
-        _fullData = _ncoreState.detail!.fullData;
+        _others = _ncoreState.detail!.others;
+        _comments = _ncoreState.detail!.comments;
       });
     } else if (widget.torrent.imdbLink != null) {
       getTorrentInfo();

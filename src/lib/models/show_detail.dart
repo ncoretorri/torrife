@@ -1,11 +1,27 @@
 class ShowDetail {
   final String title;
-  final int year;
+  final String year;
+  final String others;
   final String description;
-  final String fullData;
+  final List<Comment> comments;
 
-  ShowDetail(this.title, this.year, this.description, this.fullData);
+  ShowDetail(
+      this.title, this.year, this.others, this.description, this.comments);
 
   factory ShowDetail.fromJson(Map<String, dynamic> json) => ShowDetail(
-      json["title"], json["year"], json["description"], json["fullData"]);
+      json["title"],
+      json["year"],
+      json["others"],
+      json["description"],
+      List<Comment>.from(json["comments"].map((x) => Comment.fromJson(x))));
+}
+
+class Comment {
+  final String sender;
+  final String message;
+
+  Comment(this.sender, this.message);
+
+  factory Comment.fromJson(Map<String, dynamic> json) =>
+      Comment(json["sender"], json["message"]);
 }

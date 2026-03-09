@@ -310,7 +310,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
 
       _torrentsState.updateStatus(widget.torrent, _progress.status);
 
-      _timer = Timer(const Duration(seconds: 3), updateProgress);
+      _timer = Timer(const Duration(seconds: 2), updateProgress);
     }
   }
 

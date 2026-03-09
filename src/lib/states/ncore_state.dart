@@ -70,8 +70,7 @@ class NcoreState extends ChangeNotifier {
     } else {
       if (url.startsWith('https://ncore.pro/torrents.php?action=details&id=')) {
         detail = await NcoreParser.parseTorrentDefails(controller);
-      }
-      else if (url.startsWith("https://ncore.pro/torrents.php")) {
+      } else if (url.startsWith("https://ncore.pro/torrents.php")) {
         await NcoreParser.parseTorrents(controller);
       } else if (url.startsWith("https://ncore.pro/hitnrun.php")) {
         hnrs = await NcoreParser.getHnRTorrents(controller);
@@ -88,7 +87,8 @@ class NcoreState extends ChangeNotifier {
   }
 
   Future loadDetails(String id) async {
-    await controller.loadRequest(Uri.parse('https://ncore.pro/torrents.php?action=details&id=$id'));
+    await controller.loadRequest(
+        Uri.parse('https://ncore.pro/torrents.php?action=details&id=$id'));
   }
 
   Future startSearch(String searchTerm, String orderBy) async {
@@ -134,7 +134,7 @@ class NcoreState extends ChangeNotifier {
         '${link}tipus=kivalasztottak_kozott&kivalasztott_tipus=xvid_hun,xvid,hd_hun,hd,xvidser_hun,xvidser,hdser_hun,hdser';
 
     if (_searchTerm.isNotEmpty) {
-      link = '$link&mire=$_searchTerm&miben=name';
+      link = '$link&mire=${_searchTerm.trim()}&miben=name';
     }
 
     link = '$link&miszerint=$_orderBy&hogyan=DESC';
