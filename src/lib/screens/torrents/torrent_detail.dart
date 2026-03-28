@@ -15,6 +15,7 @@ import 'package:torri/screens/torrents/masks.dart';
 import 'package:torri/states/torrents_state.dart';
 import 'package:torri/utils/backend.dart';
 import 'package:provider/provider.dart';
+import 'package:torri/widgets/rename_dialog.dart';
 
 class TorrentDetail extends StatefulWidget {
   const TorrentDetail({super.key, required this.torrent, required this.hnr});
@@ -61,6 +62,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
         forceMaterialTransparency: true,
         title: Text(widget.torrent.displayName),
         actions: [
+          IconButton(onPressed: rename, icon: Icon(Icons.edit)),
           if (widget.torrent.status == 'Stopped')
             IconButton(
                 onPressed: start, icon: Icon(Icons.play_circle_outline_sharp)),
@@ -166,8 +168,8 @@ class _TorrentDetailState extends State<TorrentDetail> {
                               trailing: node.data!.data != null
                                   ? Column(
                                       children: [
-                                        Text(
-                                            "${Utils.formatBytes(node.data!.data!.size)}"),
+                                        Text(Utils.formatBytes(
+                                            node.data!.data!.size)),
                                         Text(
                                             "${f.format(node.data!.data!.percentComplete)}%")
                                       ],
@@ -287,7 +289,7 @@ class _TorrentDetailState extends State<TorrentDetail> {
     });
   }
 
-  showAlertDialog(BuildContext context) {
+  void showAlertDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -351,6 +353,32 @@ class _TorrentDetailState extends State<TorrentDetail> {
     });
 
     await load();
+  }
+
+  void rename() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return RenameDialog(
+            displayName: widget.torrent.displayName,
+            renameTorrent: renameTorrent);
+      },
+    );
+  }
+
+  Future renameTorrent(String newName) async {
+    if (newName != widget.torrent.displayName) {
+      var backend = getIt<Backend>();
+      await backend.rename(widget.torrent.hash, newName);
+
+      setState(() {
+        widget.torrent.displayName = newName;
+      });
+    }
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   void openMasks() {

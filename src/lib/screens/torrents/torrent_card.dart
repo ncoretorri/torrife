@@ -194,7 +194,7 @@ class _TorrentCardState extends State<TorrentCard> {
     });
   }
 
-  showAlertDialog(BuildContext context) {
+  void showAlertDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {

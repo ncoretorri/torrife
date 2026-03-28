@@ -149,6 +149,12 @@ class Backend {
         data: {'hash': hash, 'active': active, 'inActive': inActive});
   }
 
+  Future rename(String hash, String newName) async {
+    var baseUrl = await _getBaseUrl();
+    await _client.put("$baseUrl/torrent/rename",
+        data: {'hash': hash, 'displayName': newName});
+  }
+
   Future<MonoSettings> getMonoSettings() async {
     var baseUrl = await _getBaseUrl();
     var response = await _client.get("$baseUrl/settings");

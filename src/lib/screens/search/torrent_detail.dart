@@ -57,6 +57,8 @@ class _TorrentDetailState extends State<TorrentDetail> {
   @override
   void dispose() {
     _ncoreState.removeListener(listener);
+    _title.dispose();
+    _year.dispose();
     super.dispose();
   }
 

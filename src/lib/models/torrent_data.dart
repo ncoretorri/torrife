@@ -1,5 +1,5 @@
 class TorrentData {
-  final String displayName;
+  String displayName;
   final String torrentName;
   final String hash;
   num progress;
